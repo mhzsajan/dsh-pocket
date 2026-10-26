@@ -10,6 +10,10 @@ runs it under **PRoot** inside the app, then shows the DSH web UI in a full-scre
 WebView with a phone-first UI shell (bottom navigation, drawers, bottom-sheet menus,
 thumb-sized controls).
 
+<sub>Keywords: DeepSeek Harness on Android · DSH mobile app · PRoot Ubuntu on Android ·
+Termux alternative · run an AI coding agent on your phone without root · on-device
+Linux for Android · arm64 sideload APK.</sub>
+
 | | |
 |---|---|
 | Package | `com.dshpocket` · label **DSH Pocket** |
