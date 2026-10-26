@@ -1,0 +1,543 @@
+/* ============================================================================
+   DSH Pocket — phone-first skin for the DeepSeek Harness web UI.
+   Injected by the Android app after page load (style#dshp-skin).
+   Targets the pinned DSH 0.2.1-rc.2 frontend (data-slot hooks + module class
+   prefixes). Everything is deliberately !important: we are overriding a
+   desktop-first app, and React inline styles win otherwise.
+   Layout goal: no permanent icon rail, full-width chat, thumb-sized targets,
+   one bottom navigation bar, drawers instead of side-by-side panels.
+   ========================================================================== */
+
+:root {
+  --dshp-nav-h: 58px;
+  --dshp-radius: 16px;
+  --dshp-bg: #0f1012;
+  --dshp-surface: #17181b;
+  --dshp-line: rgba(255,255,255,.09);
+  --dshp-accent: #4c8dff;
+}
+
+html, body {
+  overflow-x: hidden !important;
+  background: var(--dshp-bg) !important;
+  -webkit-tap-highlight-color: rgba(76,141,255,.18);
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
+}
+
+/* ---------------------------------------------------------------- frame ---
+   Collapse the desktop grid: no permanent rail, no right column. The sidebar
+   and right panel become fixed drawers (styled below). */
+[data-slot="root"] > div {
+  grid-template-columns: 0px minmax(0, 1fr) 0px !important;
+}
+/* hide the desktop drag/resize handle (last grid child) without disturbing
+   grid auto-placement */
+[data-slot="root"] > div > div:last-child {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+}
+/* main conversation column: leave room for the injected bottom nav */
+[data-slot="main.conversation"] > div {
+  height: calc(100vh - var(--dshp-nav-h)) !important;
+  max-height: calc(100vh - var(--dshp-nav-h)) !important;
+}
+
+/* ------------------------------------------------------------ drawers ----
+   IMPORTANT: never display:none / position:fixed the *grid children* — the
+   grid would re-flow the chat column into the 0px track. Keep the columns as
+   empty grid items (0 width) and float only the sidebar's inner panel. */
+[data-slot="root"] > div > div:nth-child(1),
+[data-slot="root"] > div > div:nth-child(3) {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+[data-slot="sidebar"] > *,
+[data-slot="rightbar"] > * {
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  z-index: 60 !important;
+  display: none !important;
+  height: 100% !important;
+  background: var(--dshp-bg) !important;
+  box-shadow: 0 0 40px rgba(0,0,0,.65) !important;
+  overflow: hidden !important;
+}
+[data-slot="sidebar"] > * { left: 0 !important; width: min(86vw, 340px) !important; }
+[data-slot="rightbar"] > * { right: 0 !important; width: min(94vw, 420px) !important; }
+html.dshp-drawer-open [data-slot="sidebar"] > * { display: flex !important; }
+html.dshp-rightbar-open [data-slot="rightbar"] > * { display: flex !important; }
+/* the inner panel must fill the drawer */
+[data-slot="sidebar"] > *, [data-slot="rightbar"] > * {
+  flex-direction: column !important;
+}
+
+/* scrim behind drawers */
+#dshp-scrim {
+  position: fixed; inset: 0; z-index: 55;
+  background: rgba(0,0,0,.55);
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease;
+}
+html.dshp-drawer-open #dshp-scrim,
+html.dshp-rightbar-open #dshp-scrim { opacity: 1; pointer-events: auto; }
+
+/* ---------------------------------------------------------------- header --- */
+/* The header owns two rows on phones: session title, then Chat/Trajectory tabs.
+   Let it size to its content so the tab strip can never overlap the messages. */
+[data-slot="conversation.header"] header {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 2px 6px 0 12px !important;
+  align-content: start !important;
+}
+[class*="wSkVaW_tabs"] {
+  min-height: 42px !important;
+  background: var(--dshp-bg) !important;
+  margin-top: 2px !important;
+}
+[class*="wSkVaW_tab"] {
+  font-size: 15px !important;
+  min-height: 40px !important;
+  padding: 0 14px !important;
+}
+[data-slot="conversation.header"] header button {
+  min-width: 40px !important; min-height: 40px !important;
+}
+
+/* --------------------------------------------------------------- messages -- */
+[class*="EvIC1a_scroll"] { padding: 0 !important; }
+[class*="EvIC1a_column"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  box-sizing: border-box !important;
+}
+/* message body text: comfortable phone size and line height */
+[class*="EvIC1a_column"] p,
+[class*="EvIC1a_column"] li,
+[class*="EvIC1a_column"] td {
+  font-size: 15.5px !important;
+  line-height: 1.62 !important;
+}
+[class*="EvIC1a_column"] h1 { font-size: 21px !important; }
+[class*="EvIC1a_column"] h2 { font-size: 19px !important; }
+[class*="EvIC1a_column"] h3 { font-size: 17px !important; }
+[class*="EvIC1a_column"] pre,
+[class*="EvIC1a_column"] code {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+[class*="EvIC1a_column"] pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  border-radius: 12px !important;
+}
+[class*="EvIC1a_column"] table {
+  display: block !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+[class*="EvIC1a_column"] img,
+[class*="EvIC1a_column"] video {
+  max-width: 100% !important;
+  height: auto !important;
+}
+/* message action row buttons (copy / like / share / more) */
+[class*="EvIC1a_column"] button {
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+
+/* --------------------------------------------------------------- composer -- */
+[class*="composerSeat"] {
+  padding: 0 8px 10px 8px !important;
+  box-sizing: border-box !important;
+}
+[class*="composerStack"] { gap: 8px !important; }
+
+/* the input card */
+[data-slot="conversation.input.dock"] textarea,
+textarea {
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  min-height: 46px !important;
+  padding: 12px 14px !important;
+}
+[data-slot="conversation.input.dock"] {
+  border-radius: 20px !important;
+}
+/* control pills: allow wrapping instead of squeezing/truncating */
+[data-slot="conversation.input.bar"] {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  padding: 6px 8px 8px 8px !important;
+}
+[data-slot="conversation.input.left"],
+[data-slot="conversation.input.right"] {
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+[data-slot="conversation.input.left"] button,
+[data-slot="conversation.input.right"] button {
+  min-height: 38px !important;
+  min-width: 40px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  border-radius: 12px !important;
+}
+button[aria-label="Send message"] {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  border-radius: 50% !important;
+}
+/* control labels: one notch smaller so model / access-mode fit on one line */
+[data-slot="conversation.input.model"] button,
+[data-slot="conversation.input.permission"] button,
+[data-slot="conversation.input.plan"] button {
+  font-size: 12.5px !important;
+  white-space: nowrap !important;
+}
+[data-slot="conversation.input.model"] { max-width: 64vw !important; }
+/* add-files button */
+[data-slot="conversation.input.left"] button svg { width: 21px; height: 21px; }
+
+/* hero (empty state) spacing so it clears the keyboard + nav */
+[class*="composerHero"] { padding-bottom: 4px !important; }
+[data-slot="conversation.hero.workspace"] { font-size: 13px !important; }
+
+/* token / status line under the composer */
+[class*="composerSeat"] > div > * { min-width: 0; }
+
+/* --------------------------------------------------------------- dialogs --- */
+[role="dialog"], [role="alertdialog"] {
+  max-width: 94vw !important;
+  width: auto !important;
+  max-height: 84vh !important;
+  overflow-y: auto !important;
+  border-radius: var(--dshp-radius) !important;
+}
+[role="dialog"] button, [role="alertdialog"] button {
+  min-height: 46px !important;
+}
+/* menus / popovers */
+[role="menu"] {
+  max-width: 92vw !important;
+  min-width: 220px !important;
+  max-height: 70vh !important;
+  overflow-y: auto !important;
+  border-radius: 14px !important;
+}
+[role="menuitem"] {
+  min-height: 44px !important;
+  font-size: 15px !important;
+}
+
+/* --------------------------------------------------------------- nav bar --- */
+#dshp-nav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--dshp-nav-h);
+  z-index: 70;
+  display: flex;
+  align-items: stretch;
+  background: rgba(16,17,20,.97);
+  border-top: 1px solid var(--dshp-line);
+  backdrop-filter: blur(12px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+#dshp-nav .dshp-nb {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: #8b8f98;
+  font: 500 10.5px/1 -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+#dshp-nav .dshp-nb svg { width: 23px; height: 23px; display: block; }
+#dshp-nav .dshp-nb:active, #dshp-nav .dshp-nb.dshp-on { color: #e7ecf5; }
+#dshp-nav .dshp-nb.dshp-on { color: var(--dshp-accent); }
+
+/* hide the permanent desktop rail brand/logo when the drawer is closed */
+html:not(.dshp-drawer-open) [data-slot="sidebar"] { visibility: hidden; }
+
+/* scrollbars: keep out of the way on touch */
+* { scrollbar-width: thin; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+
+/* ------------------------------------------------------ hover-less polish --- */
+@media (hover: none) {
+  /* actions that fade in on hover must stay visible on touch */
+  [class*="EvIC1a_column"] [class*="actions"] { opacity: 1 !important; }
+  button:hover { background-color: inherit; }
+}
+
+/* ---- refinements after visual pass -------------------------------------- */
+/* model pill: give it the free space instead of a fixed clipped width */
+[data-slot="conversation.input.model"] {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+[data-slot="conversation.input.model"] [class*="triggerLabel"] {
+  font-size: 12px !important;
+  letter-spacing: -0.1px !important;
+}
+/* stats under the composer: keep turns + context, drop the cache/tokens noise */
+button[aria-label*="Cache hit"] { display: none !important; }
+[class*="bOPqQW_"] { font-size: 11px !important; }
+
+/* model label one more notch down so the full name fits the pill */
+[data-slot="conversation.input.model"] [class*="triggerLabel"],
+[data-slot="conversation.input.model"] { font-size: 11.5px !important; }
+
+/* hero row pills: smaller so workspace + preset both fit */
+[data-slot="conversation.hero.workspace"],
+[data-slot="conversation.hero.agentPreset"],
+[data-slot="conversation.hero.workspace"] button,
+[data-slot="conversation.hero.agentPreset"] button {
+  font-size: 12px !important;
+}
+[class*="heroWorkspaceRow"] { flex-wrap: wrap !important; gap: 6px !important; }
+/* model label: never ellipsise the model name on the phone */
+[data-slot="conversation.input.model"] [class*="triggerLabel"],
+[data-slot="conversation.input.model"] [class*="triggerLabel"] * {
+  font-size: 11.5px !important;
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
+/* model pill: the build tag + effort suffix steal the name; drop them on phone */
+[data-slot="conversation.input.model"] [class*="_tag_"],
+[data-slot="conversation.input.model"] [class*="triggerEffort"] { display: none !important; }
+
+/* settings dialog: stack the desktop two-pane layout into a phone sheet */
+[class*="VOzbGW_panel"] {
+  flex-direction: column !important;
+  max-height: 84vh !important;
+  width: calc(100vw - 24px) !important;
+}
+[class*="VOzbGW_nav"] {
+  width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid var(--dshp-line) !important;
+}
+[class*="VOzbGW_navTitle"] { display: none !important; }
+[class*="VOzbGW_navList"] {
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  gap: 6px !important;
+  padding: 8px 12px !important;
+  -webkit-overflow-scrolling: touch;
+}
+[class*="VOzbGW_navCell"] {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  padding: 0 14px !important;
+  min-height: 40px !important;
+  border-radius: 10px !important;
+}
+[class*="VOzbGW_content"] {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+[class*="VOzbGW_actions"] { display: none !important; }
+[class*="VOzbGW_options"] { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+
+/* settings nav tabs: icon + label on one phone-sized row */
+[class*="VOzbGW_navCell"] {
+  flex-direction: row !important;
+  gap: 7px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+[class*="VOzbGW_navCell"] svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+}
+[class*="VOzbGW_navCell"] > span,
+[class*="VOzbGW_navCell"] { font-size: 13.5px !important; }
+
+/* ============ v1.2 fixes: nav, keyboard, dialogs ============ */
+/* bottom nav: hide while the keyboard is up and while a dialog is open */
+html.dshp-keyboard { --dshp-nav-h: 0px; }
+html.dshp-keyboard #dshp-nav,
+html.dshp-dialog-open #dshp-nav { display: none !important; }
+/* main column follows the nav height variable */
+[data-slot="main.conversation"] > div {
+  height: calc(100vh - var(--dshp-nav-h)) !important;
+  max-height: calc(100vh - var(--dshp-nav-h)) !important;
+}
+/* dialogs: always provide a visible, reachable close button */
+[role="dialog"], [role="alertdialog"] { position: relative !important; }
+[class*="VOzbGW_close"] {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  z-index: 5 !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+[class*="VOzbGW_content"] { padding-top: 8px !important; }
+[class*="VOzbGW_header"] { min-height: 0 !important; padding: 0 !important; }
+/* vertical rhythm inside settings */
+[class*="VOzbGW_options"] > * { padding-top: 4px !important; }
+/* composer: no inner scroll bar artifacts */
+[class*="uV2eYG_scroll"]::-webkit-scrollbar,
+[data-input-scroll]::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
+/* bigger secondary composer buttons */
+[data-slot="conversation.input.left"] button,
+[data-slot="conversation.input.right"] button {
+  min-height: 40px !important;
+  min-width: 40px !important;
+}
+/* make sure the very bottom of the composer isn't under the gesture area */
+[class*="composerSeat"] { padding-bottom: 8px !important; }
+
+/* NOTE: no custom ::before placeholder. Lexical renders its own placeholder
+   overlay from data-placeholder; our JS rewrites that attribute instead. */
+[contenteditable]::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
+/* hero (empty session): composer within thumb reach instead of mid-screen */
+html.dshp-hero [class*="wSkVaW_scrollBody"] { justify-content: flex-end !important; }
+html.dshp-hero [class*="composerSeat"] { margin-top: 0 !important; padding-bottom: 4px !important; }
+html.dshp-hero [class*="composerHero"] { margin-bottom: 6px !important; }
+/* slightly stronger bottom-nav labels for legibility on phones */
+#dshp-nav .dshp-nb { color: #9aa0aa !important; }
+#dshp-nav .dshp-nb span { letter-spacing: .1px; }
+
+/* ============ v1.4: gesture-safe bottom nav ============ */
+:root { --dshp-nav-h: 74px; }
+/* nav: 58px of content + 16px for the Android gesture bar */
+#dshp-nav {
+  height: var(--dshp-nav-h) !important;
+  padding-bottom: 16px !important;
+  box-sizing: border-box !important;
+}
+/* hero: keep the original centred composition */
+html.dshp-hero [class*="wSkVaW_scrollBody"] { justify-content: center !important; }
+
+/* ============ v1.4 dialog/toolbar fixes ============ */
+/* dialog buttons: keep labels on one line and share the width */
+[role="dialog"] button, [role="alertdialog"] button { white-space: nowrap !important; }
+[role="dialog"] [class*="actions"], [role="dialog"] [class*="footer"],
+[role="alertdialog"] [class*="actions"], [role="alertdialog"] [class*="footer"] {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+[role="dialog"] [class*="actions"] > button, [role="dialog"] [class*="footer"] > button,
+[role="alertdialog"] [class*="actions"] > button, [role="alertdialog"] [class*="footer"] > button {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding: 0 14px !important;
+}
+/* settings: no dead band under the tab pills */
+[class*="VOzbGW_nav"] { min-height: 0 !important; height: auto !important; flex: 0 0 auto !important; }
+[class*="VOzbGW_navList"] { align-items: center !important; }
+[class*="VOzbGW_content"] { flex: 1 1 auto !important; }
+[class*="VOzbGW_navCell"] { font-size: 13px !important; padding: 0 11px !important; }
+/* dense toolbars (trajectory etc.) wrap instead of clipping off-screen */
+[class*="toolbar"] { flex-wrap: wrap !important; row-gap: 6px !important; }
+
+/* ================= v1.7: audit fixes ================= */
+/* P0: right sidebar opens as an overlay (DSH marks it with data-sidebar-right-open) */
+[data-slot="rightbar"] > * { z-index: 80 !important; }
+html.dshp-rightbar-open #dshp-nav { display: none !important; }
+[data-slot="rightbar"] button { min-width: 44px !important; min-height: 44px !important; }
+/* P0: drawer sits above the nav so the footer/account menu stays tappable */
+[data-slot="sidebar"] > * {
+  bottom: var(--dshp-nav-h) !important;
+  height: auto !important;
+  padding-bottom: 8px !important;
+}
+#dshp-scrim { z-index: 75 !important; }
+/* P1: header buttons reachable (was 10px past the right edge) */
+[data-slot="conversation.header"] header { padding-right: 10px !important; overflow: hidden !important; }
+[data-slot="conversation.header"] header button { min-width: 44px !important; min-height: 44px !important; }
+/* P1: thumb-sized targets across the composer + hero + menus */
+[data-slot^="conversation.input"] button,
+[data-slot="conversation.hero.workspace"] button,
+[data-slot="conversation.hero.agentPreset"] button {
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+button[aria-label="Send message"] { width: 48px !important; height: 48px !important; }
+/* P1: every popover menu becomes a bottom sheet on the phone */
+[role="menu"] {
+  position: fixed !important;
+  left: 8px !important;
+  right: 8px !important;
+  bottom: calc(var(--dshp-nav-h) + 10px) !important;
+  top: auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: 62vh !important;
+  overflow-y: auto !important;
+  z-index: 90 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.6) !important;
+}
+[role="menu"] [class*="_tag_"] { display: none !important; }
+/* P1: dialog chrome — close button stays put, content scrolls inside */
+[role="dialog"], [role="alertdialog"] { overflow: hidden !important; }
+[role="dialog"] [class*="header"], [role="alertdialog"] [class*="header"] {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 6 !important;
+  background: var(--dshp-bg) !important;
+}
+[role="dialog"] button[aria-label*="Close"], [role="alertdialog"] button[aria-label*="Close"] {
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+/* P1: settings — keep tabs clear of the close button, stack cramped rows */
+[class*="VOzbGW_navList"] { padding-right: 56px !important; }
+[class*="VOzbGW_options"] > * { flex-wrap: wrap !important; row-gap: 6px !important; }
+[class*="VOzbGW_options"] > * > * { min-width: 0 !important; }
+/* P2: trajectory filters get a usable height */
+[class*="toolbar"] button, [class*="toolbar"] [role="button"] { min-height: 34px !important; }
+
+/* scrim must stay BELOW the drawer panel (drawer is bright, content behind dims) */
+#dshp-scrim { z-index: 55 !important; }
+/* drawer panel above the scrim + nav, bright */
+[data-slot="sidebar"] > *, [data-slot="rightbar"] > * { z-index: 60 !important; }
+
+/* ============ v1.12 final settings polish ============ */
+/* no desktop "Open configuration file" button on phones (collides with close X) */
+[role="dialog"] button[data-dshp-hidden="1"] { display: none !important; }
+/* stack each settings row (label above control) on a phone */
+[class*="VOzbGW_options"] > div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+[class*="VOzbGW_options"] > div > * { width: 100% !important; max-width: 100% !important; }

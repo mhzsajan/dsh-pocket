@@ -1,0 +1,24 @@
+# ---- build outputs --------------------------------------------------------
+build/
+dist/
+app/assets/runtime/
+
+# ---- runtime binaries: fetched/built locally, never committed -------------
+# (see runtime/README.md — proot/loader/libs are 3rd-party binaries and the
+#  rootfs is ~314 MB, far over GitHub's file limits)
+runtime/proot
+runtime/loader
+runtime/lib/
+runtime/rootfs.tar.gz
+runtime/downloads/
+
+# ---- packages -------------------------------------------------------------
+*.apk
+*.idsig
+*.aab
+
+# ---- OS / editor ----------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.log

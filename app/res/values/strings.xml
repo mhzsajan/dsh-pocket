@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DSH Pocket</string>
+    <string name="status_starting">Starting Linux runtime\u2026</string>
+    <string name="status_ready">Server ready</string>
+    <string name="status_error">Error</string>
+    <string name="open_dsh">Open DeepSeek</string>
+    <string name="restart_server">Restart server</string>
+    <string name="stop_server">Stop server</string>
+    <string name="selftest">Self-test</string>
+    <string name="battery_hint">Allow background (battery)</string>
+</resources>

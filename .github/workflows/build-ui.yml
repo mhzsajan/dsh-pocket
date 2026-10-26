@@ -1,0 +1,49 @@
+name: build-ui
+
+# Builds the APK without the 314 MB runtime payload. This is a compile/packaging
+# smoke test for the Java app, resources, skin assets and build.ps1 itself — the
+# real APK additionally stages runtime/ (proot, loader, libs, rootfs.tar.gz),
+# which is built once on an arm64 machine (see runtime/README.md) and is not in git.
+#
+# NOTE: no android-actions/setup-android here on purpose — GitHub's windows runner
+# already ships the Android SDK, and the action's legacy `sdkmanager tools` step
+# currently fails upstream ("Failed to find package 'tools'").
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Show Android SDK
+        shell: pwsh
+        run: |
+          "ANDROID_HOME=$env:ANDROID_HOME"
+          "ANDROID_SDK_ROOT=$env:ANDROID_SDK_ROOT"
+          $sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { $env:ANDROID_SDK_ROOT }
+          if (-not $sdk -or -not (Test-Path $sdk)) { throw "No Android SDK on this runner" }
+          "build-tools:"; Get-ChildItem "$sdk\build-tools" -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+          "platforms:"; Get-ChildItem "$sdk\platforms" -Directory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+
+      - name: Build UI-only APK
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -File build.ps1 -AllowIncompleteRuntime -VersionName "ci-${{ github.run_number }}" -VersionCode 0
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DSH-Pocket-ui-only
+          path: dist/DSH-Pocket.apk
+          if-no-files-found: error
